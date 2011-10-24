@@ -3,7 +3,7 @@ PG Migrator
 
 A simple migration, which runs pure Postgres SQL files. 
 
-Drop ```<timestamp>_desc.sql``` files in ```db/migrations``` (and a corrsponding ```<timestamp>_desc_down.sql``` files if you want). 
+Drop ```<timestamp>_desc.sql``` files in ```db/migrations``` (and corresponding ```<timestamp>_desc_down.sql``` files if you want to be able to downgrade). 
 
 Gemfile:
 

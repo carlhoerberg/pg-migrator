@@ -3,9 +3,10 @@ require 'uri'
 
 namespace :db do
   task :setup do
+    next unless ENV['DATABASE_URL']
     uri = URI.parse ENV['DATABASE_URL']
     if uri.opaque
-      @migrator = PG::Migrator.new {:dbname => uri.opaque}
+      @migrator = PG::Migrator.new(:dbname => uri.opaque)
     else
       @migrator = PG::Migrator.new(uri.host, uri.port, nil, nil, uri.path.sub(/\//, ''), uri.user, uri.password)
     end

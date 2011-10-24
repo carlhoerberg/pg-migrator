@@ -8,10 +8,24 @@ Drop ```<timestamp>_desc.sql``` files in ```db/migrations``` (and corresponding 
 Gemfile:
 
     require 'pg-migrator/tasks'
-    # Make sure to have a DATABASE_URL environment variable
+
+Then make sure that you either have a DATABASE_URL environment variable 
+
     ENV['DATABASE_URL'] = "postgres://user:passwd@host/db"
-    # or if using sockets and default user
+
+or if using sockets and default user
+
     ENV['DATABASE_URL'] = "postgres:db"
+
+OR define ```db:setup```:
+
+    namespace :db do
+      task :setup => :environment do
+        @migrator = PG::Migrator.new :dbname => 'mydb'
+      end
+    end 
+
+```PG::Migrator``` takes the same arguments as [PGconn](http://rubydoc.info/gems/pg/0.11.0/PGconn#initialize-instance_method).
 
 Then as usually:
 

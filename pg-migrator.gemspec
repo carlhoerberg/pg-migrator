@@ -4,9 +4,9 @@ require File.expand_path('../lib/pg-migrator/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Carl Hörberg"]
   gem.email         = ["carl.hoerberg@gmail.com"]
-  gem.description   = %q{Simple PG Migrator}
-  gem.summary       = %q{Drop raw sql files in db/migrations and add require 'pg-migrator/tasks' in your Rakefile}
-  gem.homepage      = ""
+  gem.description   = %q{Rake migration tasks which utilities pure SQL files}
+  gem.summary       = %q{Drop raw SQL files in db/migrations and add require 'pg-migrator/tasks' to your Rakefile}
+  gem.homepage      = "https://github.com/carlhoerberg/pg-migrator"
 
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.files         = `git ls-files`.split("\n")

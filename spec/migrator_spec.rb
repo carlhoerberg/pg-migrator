@@ -4,7 +4,9 @@ require './lib/pg-migrator'
 describe PG::Migrator do
   before do
     @pg = PGconn.connect :dbname => 'pg-migrator'
-    @migrator = PG::Migrator.new({:dbname => 'pg-migrator'}, '/tmp')
+    logger = Logger.new STDERR
+    logger.level = Logger::FATAL
+    @migrator = PG::Migrator.new({:dbname => 'pg-migrator'}, '/tmp', logger)
   end
 
   describe 'reset' do

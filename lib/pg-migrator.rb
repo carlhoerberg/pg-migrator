@@ -5,8 +5,13 @@ require 'logger'
 
 module PG
   class Migrator
-    def initialize(database_url, migrations_dir = './db/migrations', logger = Logger.new(STDOUT))
-      @pg = PGconn.connect database_url
+    def initialize(conn, migrations_dir = './db/migrations', logger = Logger.new(STDOUT))
+      @pg = 
+        if conn.is_a? PGconn
+          conn 
+        else
+          PGconn.connect conn
+        end
       @pg.exec 'SET client_min_messages = warning'
       @migrations_dir = migrations_dir
       @log = logger

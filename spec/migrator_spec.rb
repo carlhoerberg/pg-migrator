@@ -9,6 +9,10 @@ describe PG::Migrator do
     @migrator = PG::Migrator.new({:dbname => 'pg-migrator'}, '/tmp', logger)
   end
 
+  it 'can be initialized with a pgconn' do
+    PG::Migrator.new(@pg)
+  end
+
   describe 'reset' do
     it 'deletes previous tables' do
       @pg.exec 'create table bar (id int)'

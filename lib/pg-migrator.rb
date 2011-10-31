@@ -19,8 +19,10 @@ module PG
 
     def reset
       @pg.transaction do |conn|
-        conn.exec 'DROP SCHEMA public CASCADE'
-        conn.exec 'CREATE SCHEMA public'
+        schema = conn.exec("show search_path").first['search_path']
+        schema = 'public' if schema.include? ','
+        conn.exec "DROP SCHEMA IF EXISTS #{schema} CASCADE"
+        conn.exec "CREATE SCHEMA #{schema}"
       end
       migrate_up
     end

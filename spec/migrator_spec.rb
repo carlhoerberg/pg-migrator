@@ -36,6 +36,22 @@ describe PG::Migrator do
       File.delete '/tmp/201109102230_init_down.sql'
     end
 
+    describe 'reset' do
+      before do
+        @pg.exec "CREATE SCHEMA test;"
+      end
+      after do
+        @pg.exec "DROP SCHEMA test CASCADE;"
+      end
+      it 'drops the current search path if a connection is provided' do
+        @pg.exec "SET search_path to test"
+        migrator = PG::Migrator.new(@pg)
+        migrator.reset
+        tables = @pg.exec "select tablename from pg_tables where schemaname = 'test'"
+        assert_includes tables.values.flatten, 'migration'
+      end
+    end
+
     describe 'up' do
       it 'adds migration table' do
         @migrator.migrate_up

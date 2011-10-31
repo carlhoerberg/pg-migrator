@@ -23,6 +23,7 @@ module PG
         schema = 'public' if schema.include? ','
         conn.exec "DROP SCHEMA IF EXISTS #{schema} CASCADE"
         conn.exec "CREATE SCHEMA #{schema}"
+        conn.exec "SET search_path TO #{schema}"
       end
       migrate_up
     end

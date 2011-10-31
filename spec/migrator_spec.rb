@@ -14,6 +14,16 @@ describe PG::Migrator do
   end
 
   describe 'reset' do
+    it 'drops the current search path if a search_path is set' do
+      @pg.exec "DROP SCHEMA IF EXISTS test CASCADE;"
+      @pg.exec "CREATE SCHEMA test;"
+      @pg.exec "SET search_path to test"
+      migrator = PG::Migrator.new(@pg)
+      migrator.reset
+      tables = @pg.exec "select tablename from pg_tables where schemaname = 'test'"
+      search_path = @pg.exec("show search_path").first['search_path']
+      assert_equal 'test', search_path
+    end
     it 'deletes previous tables' do
       @pg.exec 'create table bar (id int)'
       @migrator.reset

@@ -12,7 +12,7 @@ namespace :db do
     end
   end
 
-  desc 'Drops the "public" schema and runs all the migrations'
+  desc 'Drops all schemas currently in the search_path and then applies all the migrations'
   task :reset => :setup do
     @migrator.reset 
   end

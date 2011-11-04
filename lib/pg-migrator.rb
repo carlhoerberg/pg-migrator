@@ -19,8 +19,15 @@ module PG
 
     def reset
       @pg.transaction do |conn|
-        conn.exec 'DROP SCHEMA public CASCADE'
-        conn.exec 'CREATE SCHEMA public'
+        schemas = conn.exec "
+         SELECT DISTINCT schemaname FROM pg_tables 
+         WHERE schemaname != 'pg_catalog' 
+         AND   schemaname != 'information_schema'
+        "
+        schemas.values.flatten.each do |s|
+          conn.exec "DROP SCHEMA #{s} CASCADE"
+          conn.exec "CREATE SCHEMA #{s}"
+        end
       end
       migrate_up
     end

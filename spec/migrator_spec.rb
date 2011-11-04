@@ -14,11 +14,23 @@ describe PG::Migrator do
   end
 
   describe 'reset' do
-    it 'deletes previous tables' do
+    it 'drops tables' do
       @pg.exec 'create table bar (id int)'
       @migrator.reset
       tables = @pg.exec "select tablename from pg_tables where schemaname = 'public'"
       refute_includes tables.values.flatten, 'bar'
+    end
+
+    it 'drops tables from all schemas' do
+      @pg.exec "
+        drop schema if exists foo cascade;
+        create schema foo;
+        create table foo.bar (id int);
+        create table public.bar (id int);
+      "
+      @migrator.reset
+      tables = @pg.exec "select tablename from pg_tables where tablename = 'bar'"
+      assert_equal 0, tables.count
     end
   end
 

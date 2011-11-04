@@ -19,14 +19,18 @@ module PG
 
     def reset
       @pg.transaction do |conn|
-        schemas = conn.exec "
-         SELECT DISTINCT schemaname FROM pg_tables 
-         WHERE schemaname != 'pg_catalog' 
-         AND   schemaname != 'information_schema'
+        search_path = conn.exec("SHOW search_path").values.first.first
+        current_user = conn.exec("SELECT CURRENT_USER").values.first.first
+        schemas_sql = "SELECT nspname FROM pg_namespace 
+               WHERE NOT(nspname LIKE 'pg_%') 
+               AND nspname != 'information_schema'
         "
-        schemas.values.flatten.each do |s|
-          conn.exec "DROP SCHEMA #{s} CASCADE"
-          conn.exec "CREATE SCHEMA #{s}"
+        schemas = conn.exec(schemas_sql).values.flatten
+        search_path.split(',').each do |p|
+          p = p.strip.sub /"\$user"/, current_user
+          next unless schemas.include? p
+          conn.exec "DROP SCHEMA #{p} CASCADE; 
+                     CREATE SCHEMA #{p};"
         end
       end
       migrate_up

@@ -4,6 +4,7 @@ require './lib/pg-migrator'
 describe PG::Migrator do
   before do
     @pg = PGconn.connect :dbname => 'pg-migrator'
+    @pg.exec 'SET client_min_messages = warning'
     logger = Logger.new STDERR
     logger.level = Logger::FATAL
     @migrator = PG::Migrator.new({:dbname => 'pg-migrator'}, '/tmp', logger)
@@ -21,16 +22,24 @@ describe PG::Migrator do
       refute_includes tables.values.flatten, 'bar'
     end
 
-    it 'drops tables from all schemas' do
+    it 'drops tables from all schemas in search_path' do
       @pg.exec "
         drop schema if exists foo cascade;
-        create schema foo;
-        create table foo.bar (id int);
+        create schema foo
+          create table bar (id int);
+        drop schema if exists foobar cascade;
+        create schema foobar
+          create table bar (id int);
         create table public.bar (id int);
       "
-      @migrator.reset
-      tables = @pg.exec "select tablename from pg_tables where tablename = 'bar'"
-      assert_equal 0, tables.count
+      pg = PGconn.connect :dbname => 'pg-migrator'
+      pg.exec 'SET search_path TO foo, public'
+      migrator = PG::Migrator.new(pg)
+      migrator.reset
+      migrator.close
+      tables = @pg.exec "select schemaname, tablename from pg_tables where tablename = 'bar'"
+      assert_equal [['foobar', 'bar']], tables.values
+      @pg.exec 'drop schema if exists foobar cascade'
     end
   end
 
@@ -59,9 +68,6 @@ describe PG::Migrator do
         @migrator.migrate_up
         tables = @pg.exec "select tablename from pg_tables where schemaname = 'public'"
         assert_includes tables.values.flatten, 'foo'
-      end
-
-      it 'executes sql files in order' do
       end
 
       it 'adds records to the migration table' do

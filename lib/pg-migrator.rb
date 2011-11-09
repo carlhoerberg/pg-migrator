@@ -38,11 +38,13 @@ module PG
 
     def migrate_up
       @pg.transaction do |conn|
-        conn.exec "CREATE TABLE IF NOT EXISTS migration (
-          id bigint PRIMARY KEY,
-          name varchar(255),
-          applied timestamp DEFAULT current_timestamp)
-        "
+        exists = conn.exec "SELECT true FROM pg_tables WHERE tablename = 'migration'"
+        unless exists.any?
+          conn.exec "CREATE TABLE migration (
+            id bigint PRIMARY KEY,
+            name varchar(255),
+            applied timestamp DEFAULT current_timestamp)"
+        end
         applied = conn.exec 'SELECT id, name FROM migration ORDER BY id'
         Dir["#{@migrations_dir}/*.sql"].sort.each do |m|
           next if m.end_with? '_down.sql'

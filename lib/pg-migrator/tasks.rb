@@ -3,13 +3,21 @@ require 'uri'
 
 namespace :db do
   task :setup do
-    next unless ENV['DATABASE_URL']
+    next if @migrator
+    next if ENV['DATABASE_URL'].nil?
     uri = URI.parse ENV['DATABASE_URL']
-    if uri.opaque
-      @migrator = PG::Migrator.new(:dbname => uri.opaque)
-    else
-      @migrator = PG::Migrator.new(uri.host, uri.port, nil, nil, uri.path.sub(/\//, ''), uri.user, uri.password)
-    end
+    conn_hash = 
+      if uri.opaque
+        { :dbname => uri.opaque }
+      else
+        { :host => uri.host,
+          :port => uri.port || 5432,
+          :dbname => uri.path[1..-1],
+          :user => uri.user,
+          :password => uri.password
+        }
+      end
+    @migrator = PG::Migrator.new conn_hash
   end
 
   desc 'Drops all schemas currently in the search_path and then applies all the migrations'
